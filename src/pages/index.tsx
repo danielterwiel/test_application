@@ -1,7 +1,8 @@
 import Head from "next/head";
 import { useQuery } from "@apollo/client";
 import { GET_REACT_REPOSITORIES } from "../queries";
-import type { SearchResults, RepositoryEdge } from "../types";
+import type { SearchResults } from "../types";
+import { Table } from "../components/Table";
 
 export default function Home() {
   const { loading, error, data } = useQuery<SearchResults>(
@@ -11,6 +12,7 @@ export default function Home() {
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error </p>;
 
+  if (!data || data?.search.edges.length === 0) return <p>No data found</p>;
   return (
     <>
       <Head>
@@ -19,16 +21,7 @@ export default function Home() {
       </Head>
       <main className="prose font-sans">
         <h1>Test Application</h1>
-        <ul>
-          {data?.search.edges.map((edge: RepositoryEdge) => (
-            <li key={edge.node.name}>
-              <a href={edge.node.url} target="_blank" rel="noopener noreferrer">
-                {edge.node.name}
-              </a>{" "}
-              - Stars: {edge.node.stargazers.totalCount}
-            </li>
-          ))}
-        </ul>
+        <Table data={data.search.edges} />
       </main>
     </>
   );
