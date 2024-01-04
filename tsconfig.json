@@ -27,7 +27,14 @@
     "baseUrl": ".",
     "paths": {
       "~/*": ["./src/*"]
-    }
+    },
+    "types": [
+      "next",
+      "next/types/global",
+      "jest",
+      "@types/jest",
+      "@testing-library/react"
+    ]
   },
   "include": [
     ".eslintrc.cjs",
