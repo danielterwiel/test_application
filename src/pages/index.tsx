@@ -11,15 +11,15 @@ export default function Home() {
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error </p>;
-
   if (!data || data?.search.edges.length === 0) return <p>No data found</p>;
+
   return (
     <>
       <Head>
         <title>Test Application</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="prose font-sans">
+      <main className="prose p-8 font-mono">
         <h1>Test Application</h1>
         <Table data={data.search.edges} />
       </main>
