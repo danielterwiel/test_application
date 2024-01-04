@@ -1,8 +1,16 @@
 import Head from "next/head";
-import { env } from "../env";
+import { useQuery } from "@apollo/client";
+import { GET_REACT_REPOSITORIES } from "../queries";
+import type { SearchResults, RepositoryEdge } from "../types";
 
 export default function Home() {
-  console.log("env", env.NEXT_PUBLIC_GITHUB_API_KEY);
+  const { loading, error, data } = useQuery<SearchResults>(
+    GET_REACT_REPOSITORIES,
+  );
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error </p>;
+
   return (
     <>
       <Head>
@@ -11,6 +19,16 @@ export default function Home() {
       </Head>
       <main className="prose font-sans">
         <h1>Test Application</h1>
+        <ul>
+          {data?.search.edges.map((edge: RepositoryEdge) => (
+            <li key={edge.node.name}>
+              <a href={edge.node.url} target="_blank" rel="noopener noreferrer">
+                {edge.node.name}
+              </a>{" "}
+              - Stars: {edge.node.stargazers.totalCount}
+            </li>
+          ))}
+        </ul>
       </main>
     </>
   );
