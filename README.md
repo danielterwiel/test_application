@@ -5,7 +5,7 @@
 Add a .env file with the following content:
 
 ```txt
-NEXT_GITHUB_API_KEY=your_github_api_key
+NEXT_PUBLIC_GITHUB_API_KEY=<your_github_api_key>
 ```
 
 Install the dependencies:

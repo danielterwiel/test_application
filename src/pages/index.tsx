@@ -1,7 +1,8 @@
 import Head from "next/head";
-import Link from "next/link";
+import { env } from "../env";
 
 export default function Home() {
+  console.log("env", env.NEXT_PUBLIC_GITHUB_API_KEY);
   return (
     <>
       <Head>
