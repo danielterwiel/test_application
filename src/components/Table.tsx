@@ -8,12 +8,16 @@ export const Table = ({ data }: { data: RepositoryEdge[] }) => {
         <tr>
           <th>Name</th>
           <th>
-            <span aria-hidden="true">🌟</span>
-            Stars
+            <span className="flex justify-end gap-1">
+              <span aria-hidden="true">🌟</span>
+              Stars
+            </span>
           </th>
           <th>
-            <span aria-hidden="true">🍴</span>
-            Forks
+            <span className="flex justify-end gap-1">
+              <span aria-hidden="true">🍴</span>
+              Forks
+            </span>
           </th>
         </tr>
       </thead>
@@ -26,12 +30,16 @@ export const Table = ({ data }: { data: RepositoryEdge[] }) => {
               </a>
             </td>
             <td>
-              <span aria-hidden="true">🌟</span>
-              {edge.node.stargazers.totalCount}
+              <span className="flex justify-end gap-1">
+                <span aria-hidden="true">🌟</span>
+                {edge.node.stargazers.totalCount}
+              </span>
             </td>
             <td>
-              <span aria-hidden="true">🍴</span>
-              {edge.node.forks.totalCount}
+              <span className="flex justify-end gap-1">
+                <span aria-hidden="true">🍴</span>
+                {edge.node.forks.totalCount}
+              </span>
             </td>
           </tr>
         ))}
