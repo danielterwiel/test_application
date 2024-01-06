@@ -30,6 +30,7 @@ export default function Home() {
     variables: { first: ITEMS_PER_PAGE, before: searchParams.get("page") },
     notifyOnNetworkStatusChange: true,
   });
+
   React.useEffect(() => {
     if (data === null && initialData) {
       setData(initialData);
@@ -54,19 +55,17 @@ export default function Home() {
         variables: {
           first: ITEMS_PER_PAGE,
           after: data.search.pageInfo.endCursor,
-          last: null, // Reset cache
-          before: null, // Reset cache
+          last: null, // NOTE: Reset cache
+          before: null, // NOTE: Reset cache
         },
       });
 
-      router.push(
-        pathname +
-          "?" +
-          createQueryString(
-            "page",
-            fetchedData.data.search.pageInfo.startCursor,
-          ),
+      const queryString = createQueryString(
+        "page",
+        fetchedData.data.search.pageInfo.startCursor,
       );
+      router.push(pathname + "?" + queryString);
+
       setData(fetchedData.data);
       setLoading(false);
     }
@@ -83,15 +82,12 @@ export default function Home() {
           after: null, // NOTE: Reset cache
         },
       });
-
-      router.push(
-        pathname +
-          "?" +
-          createQueryString(
-            "page",
-            fetchedData.data.search.pageInfo.startCursor,
-          ),
+      const queryString = createQueryString(
+        "page",
+        fetchedData.data.search.pageInfo.startCursor,
       );
+      router.push(pathname + "?" + queryString);
+
       setData(fetchedData.data);
       setLoading(false);
     }
