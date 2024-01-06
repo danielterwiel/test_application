@@ -137,10 +137,10 @@ export default function Home() {
         <h1>Test Application</h1>
         <div className="flex h-4" role="status">
           {loading ? (
-            <div className="invsible absolute right-0 top-0 p-8 md:visible">
-              <div className="flex items-center">
-                <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-                <span>Loading...</span>
+            <div className="absolute right-0 top-0 p-8">
+              <div className="flex items-center gap-2">
+                <span className="invisible sm:visible">Loading</span>
+                <ReloadIcon className="h-4 w-4 animate-spin" />
               </div>
             </div>
           ) : null}
