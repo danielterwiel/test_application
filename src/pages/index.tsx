@@ -5,44 +5,21 @@ import { useSearchParams, usePathname, useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { GET_REACT_REPOSITORIES } from "../queries";
-import { Input } from "@/components/ui/input";
 import { ReloadIcon } from "@radix-ui/react-icons";
+import { Search } from "../components/Search";
 import { RepositoryTable } from "../components/RepositoryTable";
 import type { SearchResults } from "../types";
-
-const ITEMS_PER_PAGE = 10;
-
-function debounce<T extends (query: string) => unknown>(
-  func: T,
-  wait: number,
-): (...funcArgs: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout | null = null;
-
-  return function executedFunction(query: string) {
-    const later = () => {
-      timeout = null;
-      func(query);
-    };
-
-    if (timeout) {
-      clearTimeout(timeout);
-    }
-
-    timeout = setTimeout(later, wait);
-  };
-}
 
 export default function Home() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
-  const initialQuery = decodeURI(searchParams.get("query") ?? "").trim();
-  const [query, setQuery] = React.useState(initialQuery);
 
-  // NOTE: This is a workaround because the `loading` bool returned from useQuery is not updated, even when fetchMore resolves.
+  // NOTE: This is a workaround because the `loading` bool returned from useQuery is not updated after calling `fetchMore`, even when it resolves.
   // See: https://stackoverflow.com/questions/72083468/loading-remains-true-when-loading-data-with-usequery-using-apolloclient-in#comment133130739_72208553
   const [loading, setLoading] = React.useState(true);
 
+  const query = decodeURI(searchParams.get("query") ?? "topic:react").trim();
   const [data, setData] = React.useState<SearchResults | null>(null);
   const {
     error,
@@ -50,9 +27,9 @@ export default function Home() {
     fetchMore,
   } = useQuery<SearchResults>(GET_REACT_REPOSITORIES, {
     variables: {
-      first: ITEMS_PER_PAGE,
+      first: 10,
       before: searchParams.get("page"),
-      query: `topic:react ${query}`,
+      query,
     },
     notifyOnNetworkStatusChange: true,
   });
@@ -74,48 +51,16 @@ export default function Home() {
     [searchParams],
   );
 
-  function setSearchParams(query: string) {
-    const encodedValue = encodeURI(query);
-    const url = encodedValue ? `${pathname}?search=${encodedValue}` : pathname;
-    router.replace(url);
-    void search();
-  }
-
-  async function search() {
-    setLoading(true);
-
-    const fetchedData = await fetchMore({
-      variables: {
-        first: ITEMS_PER_PAGE,
-        after: data?.search.pageInfo.endCursor,
-        last: null, // NOTE: Reset cache
-        before: null, // NOTE: Reset cache
-        query: `topic:react ${query}`,
-      },
-    });
-
-    setData(fetchedData.data);
-    setLoading(false);
-  }
-
-  const debouncedSetSearchParams = debounce(setSearchParams, 250);
-
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event?.target?.value;
-    setQuery(value);
-    debouncedSetSearchParams(value);
-  };
-
   const handleNext = async () => {
     if (data?.search.pageInfo.hasNextPage) {
       setLoading(true);
       const fetchedData = await fetchMore({
         variables: {
-          first: ITEMS_PER_PAGE,
+          first: 10,
           after: data.search.pageInfo.endCursor,
           last: null, // NOTE: Reset cache
           before: null, // NOTE: Reset cache
-          query: `topic:react ${query}`,
+          query,
         },
       });
 
@@ -135,10 +80,11 @@ export default function Home() {
       setLoading(true);
       const fetchedData = await fetchMore({
         variables: {
-          last: ITEMS_PER_PAGE,
+          last: 10,
           before: data.search.pageInfo.startCursor,
           first: null, // NOTE: Reset cache
           after: null, // NOTE: Reset cache
+          query,
         },
       });
       const queryString = createQueryString(
@@ -164,14 +110,12 @@ export default function Home() {
         <h1>Test Application</h1>
         <div>
           <div className="flex items-center justify-between">
-            <form>
-              <Input
-                className="w-full"
-                placeholder="e.g. @tanstack/table"
-                value={query}
-                onChange={handleInputChange}
-              />
-            </form>
+            <Search
+              setLoading={setLoading}
+              setData={setData}
+              data={data}
+              fetchMore={fetchMore}
+            />
             <div className="flex h-4">
               {loading ? (
                 <div className="flex items-center">
@@ -180,7 +124,6 @@ export default function Home() {
                 </div>
               ) : null}
             </div>
-
             <div className="flex justify-end gap-4">
               <Button
                 disabled={!data?.search.pageInfo.hasPreviousPage || loading}
@@ -200,7 +143,7 @@ export default function Home() {
         {!loading && data?.search.edges.length === 0 ? (
           <div className="p-1 text-center">
             <div>No results found for</div>
-            <div>&quot;{query}&quot;</div>
+            {/* <div>&quot;{query}&quot;</div> */}
           </div>
         ) : null}
         <RepositoryTable data={data?.search.edges} loading={loading} />
