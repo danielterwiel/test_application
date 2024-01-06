@@ -44,7 +44,7 @@ export const RepositoryTable = ({
       </TableHeader>
       <TableBody>
         {data?.map((edge: RepositoryEdge) => (
-          <TableRow key={edge.node.name}>
+          <TableRow key={edge.node.id}>
             <TableCell>
               <a href={edge.node.url} target="_blank" rel="noopener noreferrer">
                 {edge.node.name}

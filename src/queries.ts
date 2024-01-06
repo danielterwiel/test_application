@@ -18,6 +18,7 @@ export const GET_REACT_REPOSITORIES = gql`
       edges {
         node {
           ... on Repository {
+            id
             name
             url
             description
