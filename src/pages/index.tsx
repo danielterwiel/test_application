@@ -94,7 +94,7 @@ export default function Home() {
   };
 
   if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error </p>;
+  if (error) return <p>Error: {error.message}</p>;
   if (!data || data.search.edges.length === 0) return <p>No data found</p>;
 
   return (
