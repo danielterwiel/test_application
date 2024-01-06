@@ -5,68 +5,82 @@ import { GET_REACT_REPOSITORIES } from "../queries";
 import type { SearchResults } from "../types";
 import { RepositoryTable } from "../components/RepositoryTable";
 
+const ITEMS_PER_PAGE = 10;
+
 export default function Home() {
-  const [after, setAfter] = React.useState<string | null>(null);
-  const [before, setBefore] = React.useState<string | null>(null);
-  const [isNext, setIsNext] = React.useState<boolean>(true);
+  const [pagination, setPagination] = React.useState<{
+    after: string | null;
+    before: string | null;
+  }>({
+    after: null,
+    before: null,
+  });
+  const { after, before } = pagination;
 
   const {
     loading,
     error,
     data: initialData,
     fetchMore,
+    // refetch,
   } = useQuery<SearchResults>(GET_REACT_REPOSITORIES, {
-    variables: {
-      after,
-      before,
-      first: isNext ? 10 : undefined,
-      last: !isNext ? 10 : undefined,
-    },
+    variables: { first: ITEMS_PER_PAGE },
+    notifyOnNetworkStatusChange: true,
   });
-
-  const [data, setData] = React.useState<SearchResults | null>(
-    initialData ?? null,
-  );
+  const [data, setData] = React.useState<SearchResults | null>(null);
 
   React.useEffect(() => {
-    if (!loading && initialData && !error) {
+    if (data === null && initialData) {
       setData(initialData);
     }
-  }, [loading, initialData, error]);
+  }, [data, initialData]);
+  // React.useEffect(() => {
+  //   void refetch({ first: ITEMS_PER_PAGE, after: null, before: null });
+  // }, [refetch]);
 
   const handleNext = async () => {
     if (data?.search.pageInfo.hasNextPage) {
-      setIsNext(true);
-      await fetchMore({
+      const fetchedData = await fetchMore({
         variables: {
+          first: ITEMS_PER_PAGE,
           after: data.search.pageInfo.endCursor,
-          first: 10,
+          last: null, // Reset cache
+          before: null, // Reset cache
         },
-      }).then((fetchedData) => {
-        setData(fetchedData.data);
-        setAfter(fetchedData.data.search.pageInfo.endCursor);
-        setBefore(null);
+      });
+
+      console.log("fetchedData", fetchedData.data);
+
+      setData(fetchedData.data);
+      setPagination({
+        after: fetchedData.data.search.pageInfo.endCursor,
+        before: null,
       });
     }
   };
 
-  const handleBack = async () => {
+  const handlePrevious = async () => {
     if (data?.search.pageInfo.hasPreviousPage) {
-      setIsNext(false);
-      await fetchMore({
+      const fetchedData = await fetchMore({
         variables: {
+          last: ITEMS_PER_PAGE,
           before: data.search.pageInfo.startCursor,
-          last: 10,
+          first: null, // NOTE: Reset cache
+          after: null, // NOTE: Reset cache
         },
-      }).then((fetchedData) => {
-        setData(fetchedData.data);
-        setBefore(fetchedData.data.search.pageInfo.startCursor);
-        setAfter(null);
+      });
+
+      console.log("fetchedData", fetchedData.data);
+
+      setData(fetchedData.data);
+      setPagination({
+        before: fetchedData.data.search.pageInfo.startCursor,
+        after: null,
       });
     }
   };
 
-  if (loading) return <p>Loading...</p>;
+  // if (loading) return <p>Loading...</p>;
   if (error) return <p>Error </p>;
   if (!data || data.search.edges.length === 0) return <p>No data found</p>;
 
@@ -82,22 +96,16 @@ export default function Home() {
 
         <div className="flex gap-4">
           <button
-            disabled={
-              !data.search.pageInfo.hasPreviousPage || isLoading || loading
-            }
-            aria-disabled={
-              !data.search.pageInfo.hasPreviousPage || isLoading || loading
-            }
+            // disabled={!data.search.pageInfo.hasPreviousPage || loading}
+            // aria-disabled={!data.search.pageInfo.hasPreviousPage || loading}
             className="border-blue disabled:bg-red disabled:bg-red rounded-xl border p-2 hover:bg-black hover:text-white disabled:cursor-not-allowed"
-            onClick={handleBack}
+            onClick={handlePrevious}
           >
             Back
           </button>
           <button
-            disabled={!data.search.pageInfo.hasNextPage || isLoading || loading}
-            aria-disabled={
-              !data.search.pageInfo.hasNextPage || isLoading || loading
-            }
+            // disabled={!data.search.pageInfo.hasNextPage || loading}
+            // aria-disabled={!data.search.pageInfo.hasNextPage || loading}
             className="border-blue disabled:bg-red disabled:bg-red rounded-xl border p-2 hover:bg-black hover:text-white disabled:cursor-not-allowed"
             onClick={handleNext}
           >

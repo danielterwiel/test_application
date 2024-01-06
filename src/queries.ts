@@ -2,8 +2,8 @@ import { gql } from "@apollo/client";
 export const GET_REACT_REPOSITORIES = gql`
   query GetReactRepositories(
     $first: Int
-    $after: String
     $last: Int
+    $after: String
     $before: String
   ) {
     search(
