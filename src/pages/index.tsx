@@ -18,7 +18,6 @@ export default function Home() {
   const { after, before } = pagination;
 
   const {
-    loading,
     error,
     data: initialData,
     fetchMore,
@@ -28,18 +27,24 @@ export default function Home() {
     notifyOnNetworkStatusChange: true,
   });
   const [data, setData] = React.useState<SearchResults | null>(null);
+  // NOTE: This is a workaround because the `loading` bool returned from useQuery is not updated, even when fetchMore resolves.
+  // See: https://stackoverflow.com/questions/72083468/loading-remains-true-when-loading-data-with-usequery-using-apolloclient-in#comment133130739_72208553
+  const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
     if (data === null && initialData) {
       setData(initialData);
+      setLoading(false);
     }
   }, [data, initialData]);
+
   // React.useEffect(() => {
   //   void refetch({ first: ITEMS_PER_PAGE, after: null, before: null });
   // }, [refetch]);
 
   const handleNext = async () => {
     if (data?.search.pageInfo.hasNextPage) {
+      setLoading(true);
       const fetchedData = await fetchMore({
         variables: {
           first: ITEMS_PER_PAGE,
@@ -49,18 +54,18 @@ export default function Home() {
         },
       });
 
-      console.log("fetchedData", fetchedData.data);
-
       setData(fetchedData.data);
       setPagination({
         after: fetchedData.data.search.pageInfo.endCursor,
         before: null,
       });
+      setLoading(false);
     }
   };
 
   const handlePrevious = async () => {
     if (data?.search.pageInfo.hasPreviousPage) {
+      setLoading(true);
       const fetchedData = await fetchMore({
         variables: {
           last: ITEMS_PER_PAGE,
@@ -70,17 +75,16 @@ export default function Home() {
         },
       });
 
-      console.log("fetchedData", fetchedData.data);
-
       setData(fetchedData.data);
       setPagination({
         before: fetchedData.data.search.pageInfo.startCursor,
         after: null,
       });
+      setLoading(false);
     }
   };
 
-  // if (loading) return <p>Loading...</p>;
+  if (loading) return <p>Loading...</p>;
   if (error) return <p>Error </p>;
   if (!data || data.search.edges.length === 0) return <p>No data found</p>;
 
@@ -96,16 +100,16 @@ export default function Home() {
 
         <div className="flex gap-4">
           <button
-            // disabled={!data.search.pageInfo.hasPreviousPage || loading}
-            // aria-disabled={!data.search.pageInfo.hasPreviousPage || loading}
+            disabled={!data.search.pageInfo.hasPreviousPage || loading}
+            aria-disabled={!data.search.pageInfo.hasPreviousPage || loading}
             className="border-blue disabled:bg-red disabled:bg-red rounded-xl border p-2 hover:bg-black hover:text-white disabled:cursor-not-allowed"
             onClick={handlePrevious}
           >
             Back
           </button>
           <button
-            // disabled={!data.search.pageInfo.hasNextPage || loading}
-            // aria-disabled={!data.search.pageInfo.hasNextPage || loading}
+            disabled={!data.search.pageInfo.hasNextPage || loading}
+            aria-disabled={!data.search.pageInfo.hasNextPage || loading}
             className="border-blue disabled:bg-red disabled:bg-red rounded-xl border p-2 hover:bg-black hover:text-white disabled:cursor-not-allowed"
             onClick={handleNext}
           >
