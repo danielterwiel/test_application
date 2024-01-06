@@ -18,28 +18,30 @@ function useDebouncedSearchTerm(value: string, delay: number): string {
   return debouncedValue;
 }
 
-export const DebouncedSearchInput = React.memo(
-  ({ onSearch }: { onSearch: (searchTerm: string) => void }) => {
-    const [searchTerm, setSearchTerm] = React.useState<string>("");
-    const debouncedSearchTerm = useDebouncedSearchTerm(searchTerm, 1000);
+export const DebouncedSearchInput = React.memo(function DebouncedSearchInput({
+  onSearch,
+}: {
+  onSearch: (searchTerm: string) => void;
+}) {
+  const [searchTerm, setSearchTerm] = React.useState<string>("");
+  const debouncedSearchTerm = useDebouncedSearchTerm(searchTerm, 1000);
 
-    React.useEffect(() => {
-      onSearch(debouncedSearchTerm);
-    }, [debouncedSearchTerm, onSearch]);
+  React.useEffect(() => {
+    onSearch(debouncedSearchTerm);
+  }, [debouncedSearchTerm, onSearch]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      setSearchTerm(e.target.value);
-    };
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
 
-    return (
-      <form onSubmit={(e) => e.preventDefault()}>
-        <Input
-          type="text"
-          value={searchTerm}
-          onChange={handleChange}
-          placeholder="e.g. @tanstack/table" // NOTE: should be @tanstack/react-table
-        />
-      </form>
-    );
-  },
-);
+  return (
+    <form onSubmit={(e) => e.preventDefault()}>
+      <Input
+        type="text"
+        value={searchTerm}
+        onChange={handleChange}
+        placeholder="e.g. @tanstack/table" // NOTE: should be @tanstack/react-table
+      />
+    </form>
+  );
+});

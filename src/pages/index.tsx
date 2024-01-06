@@ -17,8 +17,6 @@ export default function Home() {
   const pathname = usePathname();
   const router = useRouter();
 
-  const [query, setQuery] = React.useState("topic:react");
-
   // NOTE: This is a workaround because the `loading` bool returned from useQuery is not updated, even when fetchMore resolves.
   // See: https://stackoverflow.com/questions/72083468/loading-remains-true-when-loading-data-with-usequery-using-apolloclient-in#comment133130739_72208553
   const [loading, setLoading] = React.useState(true);
@@ -28,12 +26,11 @@ export default function Home() {
     error,
     data: initialData,
     fetchMore,
-    refetch,
   } = useQuery<SearchResults>(GET_REACT_REPOSITORIES, {
     variables: {
       first: ITEMS_PER_PAGE,
       before: searchParams.get("page"),
-      query,
+      query: "topic:react",
     },
     notifyOnNetworkStatusChange: true,
   });
@@ -100,35 +97,28 @@ export default function Home() {
     }
   };
 
-  React.useEffect(() => {
-    const performSearch = async () => {
-      if (query !== "") {
-        setLoading(true);
-
-        const fetchedData = await fetchMore({
-          variables: {
-            query,
-            first: ITEMS_PER_PAGE,
-            last: null, // NOTE: Reset cache
-            before: null, // NOTE: Reset cache
-          },
-        });
-
-        setData(fetchedData.data);
-        setLoading(false);
-      }
-    };
-    void performSearch();
-  }, [createQueryString, fetchMore, pathname, query, router, refetch]);
-
   const handleDebouncedSearch = React.useCallback(
-    (q: string) => {
-      console.log(q, query);
-      if (q !== query) {
-        setQuery(q);
-      }
+    (searchInput: string) => {
+      const performSearch = async () => {
+        if (searchInput !== "") {
+          setLoading(true);
+
+          const fetchedData = await fetchMore({
+            variables: {
+              query: searchInput,
+              first: ITEMS_PER_PAGE,
+              last: null, // NOTE: Reset cache
+              before: null, // NOTE: Reset cache
+            },
+          });
+
+          setData(fetchedData.data);
+          setLoading(false);
+        }
+      };
+      void performSearch();
     },
-    [query],
+    [fetchMore],
   );
 
   if (error) return <p>Error: {error.message}</p>;
