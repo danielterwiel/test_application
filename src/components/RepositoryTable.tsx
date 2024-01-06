@@ -9,10 +9,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import clsx from "clsx";
 
-export const RepositoryTable = ({ data }: { data: RepositoryEdge[] }) => {
+export const RepositoryTable = ({
+  data,
+  loading,
+}: {
+  data: RepositoryEdge[] | undefined;
+  loading: boolean;
+}) => {
+  const tableClass = clsx({
+    "animate-pulse": loading,
+    "font-mono": true,
+  });
   return (
-    <Table className="font-mono">
+    <Table className={tableClass}>
       <TableCaption>A list of popular React repositories.</TableCaption>
       <TableHeader>
         <TableRow>
@@ -32,7 +43,7 @@ export const RepositoryTable = ({ data }: { data: RepositoryEdge[] }) => {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {data.map((edge: RepositoryEdge) => (
+        {data?.map((edge: RepositoryEdge) => (
           <TableRow key={edge.node.name}>
             <TableCell>
               <a href={edge.node.url} target="_blank" rel="noopener noreferrer">
