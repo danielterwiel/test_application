@@ -100,21 +100,21 @@ export default function Home() {
   const handleDebouncedSearch = React.useCallback(
     (searchInput: string) => {
       const performSearch = async () => {
-        if (searchInput !== "") {
-          setLoading(true);
+        setLoading(true);
 
-          const fetchedData = await fetchMore({
-            variables: {
-              query: searchInput,
-              first: ITEMS_PER_PAGE,
-              last: null, // NOTE: Reset cache
-              before: null, // NOTE: Reset cache
-            },
-          });
+        const fetchedData = await fetchMore({
+          variables: {
+            query: `topic:react ${searchInput}`,
+            first: ITEMS_PER_PAGE,
+            last: null, // NOTE: Reset cache
+            before: null, // NOTE: Reset cache
+          },
+        });
 
-          setData(fetchedData.data);
-          setLoading(false);
-        }
+        console.log(fetchedData);
+
+        setData(fetchedData.data);
+        setLoading(false);
       };
       void performSearch();
     },
