@@ -1,20 +1,19 @@
 import React from "react";
 import Head from "next/head";
 import { useQuery } from "@apollo/client";
-import { useSearchParams, usePathname, useRouter } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ReloadIcon } from "@radix-ui/react-icons";
 
+import { DebouncedSearchInput } from "../components/DebouncedSearchInput";
 import { GET_REACT_REPOSITORIES } from "../queries";
-import type { SearchResults } from "../types";
 import { RepositoryTable } from "../components/RepositoryTable";
-import clsx from "clsx";
+import { type SearchResults } from "../types";
 
 const ITEMS_PER_PAGE = 10;
 
 export default function Home() {
   const searchParams = useSearchParams();
-  const pathname = usePathname();
   const router = useRouter();
 
   // NOTE: This is a workaround because the `loading` bool returned from useQuery is not updated, even when fetchMore resolves.
@@ -27,7 +26,11 @@ export default function Home() {
     data: initialData,
     fetchMore,
   } = useQuery<SearchResults>(GET_REACT_REPOSITORIES, {
-    variables: { first: ITEMS_PER_PAGE, before: searchParams.get("page") },
+    variables: {
+      first: ITEMS_PER_PAGE,
+      before: searchParams.get("page"),
+      query: "topic:react",
+    },
     notifyOnNetworkStatusChange: true,
   });
 
@@ -38,14 +41,18 @@ export default function Home() {
     }
   }, [data, initialData]);
 
-  const createQueryString = React.useCallback(
-    (name: string, value: string) => {
-      const params = new URLSearchParams(searchParams);
-      params.set(name, value);
-
-      return params.toString();
+  const setQueryStringParameter = React.useCallback(
+    (key: string, value: string, replace = false) => {
+      const searchParams = new URLSearchParams(window.location.search);
+      searchParams.set(key, encodeURI(value));
+      const uri = `${window.location.pathname}?${searchParams.toString()}`;
+      if (replace) {
+        router.push(uri);
+      } else {
+        router.replace(uri);
+      }
     },
-    [searchParams],
+    [router],
   );
 
   const handleNext = async () => {
@@ -57,14 +64,14 @@ export default function Home() {
           after: data.search.pageInfo.endCursor,
           last: null, // NOTE: Reset cache
           before: null, // NOTE: Reset cache
+          query: decodeURI(searchParams.get("query") ?? "topic:react"),
         },
       });
 
-      const queryString = createQueryString(
+      setQueryStringParameter(
         "page",
         fetchedData.data.search.pageInfo.startCursor,
       );
-      router.push(pathname + "?" + queryString);
 
       setData(fetchedData.data);
       setLoading(false);
@@ -80,21 +87,46 @@ export default function Home() {
           before: data.search.pageInfo.startCursor,
           first: null, // NOTE: Reset cache
           after: null, // NOTE: Reset cache
+          query: decodeURI(searchParams.get("query") ?? "topic:react"),
         },
       });
-      const queryString = createQueryString(
+      setQueryStringParameter(
         "page",
         fetchedData.data.search.pageInfo.startCursor,
       );
-      router.push(pathname + "?" + queryString);
 
       setData(fetchedData.data);
       setLoading(false);
     }
   };
 
+  const handleDebouncedSearch = React.useCallback(
+    (searchInput: string) => {
+      const performSearch = async () => {
+        setLoading(true);
+
+        const q = `topic:react ${searchInput}`;
+
+        const fetchedData = await fetchMore({
+          variables: {
+            query: q,
+            first: ITEMS_PER_PAGE,
+            last: null, // NOTE: Reset cache
+            before: null, // NOTE: Reset cache
+          },
+        });
+
+        setQueryStringParameter("query", q, true);
+        setData(fetchedData.data);
+        setLoading(false);
+      };
+      void performSearch();
+    },
+    [fetchMore, setQueryStringParameter],
+  );
+
   if (error) return <p>Error: {error.message}</p>;
-  if (!loading && data?.search.edges.length === 0) return <p>No data found</p>;
+  // if (!loading && data?.search.edges.length === 0) return <p>No data found</p>;
 
   return (
     <>
@@ -106,12 +138,8 @@ export default function Home() {
         <h1>Test Application</h1>
         <div>
           <div className="flex items-center justify-between">
-            <div
-              className={clsx({
-                "animate-bounce": loading,
-                "flex h-4 ": true,
-              })}
-            >
+            <DebouncedSearchInput onSearch={handleDebouncedSearch} />
+            <div className="flex h-4">
               {loading ? (
                 <div className="flex items-center">
                   <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
@@ -136,7 +164,11 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <RepositoryTable data={data?.search.edges} loading={loading} />
+        <RepositoryTable
+          data={data?.search.edges}
+          loading={loading}
+          aria-busy={loading}
+        />
       </main>
     </>
   );

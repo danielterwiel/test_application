@@ -31,6 +31,7 @@
     "@testing-library/react": "^14.1.2",
     "@types/eslint": "^8.44.7",
     "@types/jest": "^29.5.11",
+    "@types/lodash.debounce": "^4.0.9",
     "@types/node": "^18.17.0",
     "@types/react": "^18.2.37",
     "@types/react-dom": "^18.2.15",

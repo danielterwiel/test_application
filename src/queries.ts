@@ -1,13 +1,14 @@
 import { gql } from "@apollo/client";
 export const GET_REACT_REPOSITORIES = gql`
   query GetReactRepositories(
+    $query: String!
     $first: Int
     $last: Int
     $after: String
     $before: String
   ) {
     search(
-      query: "topic:react"
+      query: $query
       type: REPOSITORY
       first: $first
       after: $after
@@ -17,6 +18,7 @@ export const GET_REACT_REPOSITORIES = gql`
       edges {
         node {
           ... on Repository {
+            id
             name
             url
             description
