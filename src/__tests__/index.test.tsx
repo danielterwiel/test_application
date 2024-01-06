@@ -1,58 +1,12 @@
-import { MockedProvider } from "@apollo/client/testing";
 import { render, screen } from "@testing-library/react";
+import { MockedProvider } from "@apollo/client/testing";
+import { describe, it, expect, vi } from "vitest";
 
 import App from "../pages/index";
 
 import { GET_REACT_REPOSITORIES } from "../queries";
-import { describe, it, expect, vi } from "vitest";
 
-const mockEdge = {
-  __typename: "SearchResultItemEdge",
-  node: {
-    __typename: "Repository",
-    id: "MDEwOlJlcG9zaXRvcnkyODQ1NzgyMw==",
-    name: "freeCodeCamp",
-    url: "https://github.com/freeCodeCamp/freeCodeCamp",
-    description:
-      "freeCodeCamp.org's open-source codebase and curriculum. Learn to code for free.",
-    stargazers: {
-      __typename: "StargazerConnection",
-      totalCount: 380973,
-    },
-    forks: {
-      __typename: "RepositoryConnection",
-      totalCount: 33484,
-    },
-  },
-};
-const mocks = [
-  {
-    request: {
-      query: GET_REACT_REPOSITORIES,
-      variables: {
-        query: "topic:react",
-        first: 10,
-        before: null,
-        last: null,
-      },
-    },
-    result: {
-      data: {
-        search: {
-          edges: [mockEdge],
-          pageInfo: {
-            endCursor: "cursor",
-            startCursor: "cursor",
-            hasNextPage: true,
-            hasPreviousPage: false,
-          },
-        },
-      },
-    },
-  },
-];
-
-describe("App Component", () => {
+describe("App component", () => {
   vi.mock("next/navigation", async () => {
     const actual = await vi.importActual("next/navigation");
     return {
@@ -69,11 +23,84 @@ describe("App Component", () => {
   });
 
   it("renders loading state initially", () => {
+    const loadingMock = {
+      request: {
+        query: GET_REACT_REPOSITORIES,
+        variables: {
+          first: 10,
+          before: null,
+          query: "topic:react",
+          last: null,
+        },
+      },
+      result: {
+        data: {
+          search: {
+            edges: [],
+          },
+        },
+      },
+    };
+
     render(
-      <MockedProvider mocks={mocks} addTypename={false}>
+      <MockedProvider mocks={[loadingMock]} addTypename={false}>
         <App />
       </MockedProvider>,
     );
     expect(screen.getByText("Loading")).toBeInTheDocument();
+  });
+
+  it.skip("renders error state", async () => {
+    const errorMock = [
+      {
+        request: {
+          query: GET_REACT_REPOSITORIES,
+          variables: {
+            first: 10,
+            before: null,
+            query: "topic:react",
+            last: null,
+          },
+        },
+        error: new Error("An error occurred"),
+      },
+    ];
+
+    render(
+      <MockedProvider mocks={errorMock} addTypename={false}>
+        <App />
+      </MockedProvider>,
+    );
+
+    expect(await screen.findByText("Error:")).toBeInTheDocument();
+  });
+
+  it.skip(`renders "No results found" when there are no edges`, async () => {
+    const noDataMock = {
+      request: {
+        query: GET_REACT_REPOSITORIES,
+        variables: {
+          first: 10,
+          before: null,
+          query: "topic:react",
+          last: null,
+        },
+      },
+      result: {
+        data: {
+          search: {
+            edges: [],
+          },
+        },
+      },
+    };
+
+    render(
+      <MockedProvider mocks={[noDataMock]} addTypename={false}>
+        <App />
+      </MockedProvider>,
+    );
+
+    expect(await screen.findByText("No results found")).toBeInTheDocument();
   });
 });

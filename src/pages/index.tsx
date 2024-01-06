@@ -16,8 +16,8 @@ export default function App() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // NOTE: This is a workaround because the `loading` bool returned from useQuery is not updated, even when fetchMore resolves.
-  // See: https://stackoverflow.com/questions/72083468/loading-remains-true-when-loading-data-with-usequery-using-apolloclient-in#comment133130739_72208553
+  // HACK: This is a workaround because the `loading` bool returned from useQuery is not updated, even when fetchMore resolves.
+  // Similar issue: https://stackoverflow.com/questions/72083468/loading-remains-true-when-loading-data-with-usequery-using-apolloclient-in#comment133130739_72208553
   const [loading, setLoading] = React.useState(true);
 
   const [data, setData] = React.useState<SearchResults | null>(null);
@@ -36,7 +36,6 @@ export default function App() {
 
   React.useEffect(() => {
     if (data === null && initialData) {
-      console.log("initialData", JSON.stringify(initialData, null, 2));
       setData(initialData);
       setLoading(false);
     }
@@ -175,7 +174,7 @@ export default function App() {
           <p className="text-xl text-destructive">Error: {error}</p>
         ) : null}
         {!loading && data?.search.edges.length === 0 ? (
-          <p className="text-xl text-destructive">No results found</p>
+          <p className="text-xl">No results found</p>
         ) : (
           <RepositoryTable
             data={data?.search.edges}
