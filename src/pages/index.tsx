@@ -2,9 +2,13 @@ import React from "react";
 import Head from "next/head";
 import { useQuery } from "@apollo/client";
 import { useSearchParams, usePathname, useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { ReloadIcon } from "@radix-ui/react-icons";
+
 import { GET_REACT_REPOSITORIES } from "../queries";
 import type { SearchResults } from "../types";
 import { RepositoryTable } from "../components/RepositoryTable";
+import clsx from "clsx";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -93,9 +97,8 @@ export default function Home() {
     }
   };
 
-  if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
-  if (!data || data.search.edges.length === 0) return <p>No data found</p>;
+  if (!loading && data?.search.edges.length === 0) return <p>No data found</p>;
 
   return (
     <>
@@ -105,26 +108,39 @@ export default function Home() {
       </Head>
       <main className="prose p-8 font-mono">
         <h1>Test Application</h1>
-        <RepositoryTable data={data?.search.edges} />
+        <div>
+          <div className="flex items-center justify-between">
+            <div
+              className={clsx({
+                "animate-bounce": loading,
+                "flex h-4 ": true,
+              })}
+            >
+              {loading ? (
+                <div className="flex items-center">
+                  <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                  <span>Loading...</span>
+                </div>
+              ) : null}
+            </div>
 
-        <div className="flex justify-center gap-4">
-          <button
-            disabled={!data.search.pageInfo.hasPreviousPage || loading}
-            aria-disabled={!data.search.pageInfo.hasPreviousPage || loading}
-            className="border-blue disabled:bg-red disabled:bg-red rounded-xl border p-2 hover:bg-black hover:text-white disabled:cursor-not-allowed"
-            onClick={handlePrevious}
-          >
-            Back
-          </button>
-          <button
-            disabled={!data.search.pageInfo.hasNextPage || loading}
-            aria-disabled={!data.search.pageInfo.hasNextPage || loading}
-            className="border-blue disabled:bg-red disabled:bg-red rounded-xl border p-2 hover:bg-black hover:text-white disabled:cursor-not-allowed"
-            onClick={handleNext}
-          >
-            Next
-          </button>
+            <div className="flex justify-end gap-4">
+              <Button
+                disabled={!data?.search.pageInfo.hasPreviousPage || loading}
+                onClick={handlePrevious}
+              >
+                Back
+              </Button>
+              <Button
+                disabled={!data?.search.pageInfo.hasNextPage || loading}
+                onClick={handleNext}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
         </div>
+        <RepositoryTable data={data?.search.edges} loading={loading} />
       </main>
     </>
   );
