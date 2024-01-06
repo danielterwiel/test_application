@@ -8,8 +8,7 @@ import { ReloadIcon } from "@radix-ui/react-icons";
 import { DebouncedSearchInput } from "../components/DebouncedSearchInput";
 import { GET_REACT_REPOSITORIES } from "../queries";
 import { RepositoryTable } from "../components/RepositoryTable";
-import clsx from "clsx";
-import type { SearchResults } from "../types";
+import { type SearchResults } from "../types";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -17,6 +16,8 @@ export default function Home() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
+
+  const [query, setQuery] = React.useState("topic:react");
 
   // NOTE: This is a workaround because the `loading` bool returned from useQuery is not updated, even when fetchMore resolves.
   // See: https://stackoverflow.com/questions/72083468/loading-remains-true-when-loading-data-with-usequery-using-apolloclient-in#comment133130739_72208553
@@ -27,8 +28,13 @@ export default function Home() {
     error,
     data: initialData,
     fetchMore,
+    refetch,
   } = useQuery<SearchResults>(GET_REACT_REPOSITORIES, {
-    variables: { first: ITEMS_PER_PAGE, before: searchParams.get("page") },
+    variables: {
+      first: ITEMS_PER_PAGE,
+      before: searchParams.get("page"),
+      query,
+    },
     notifyOnNetworkStatusChange: true,
   });
 
@@ -94,8 +100,41 @@ export default function Home() {
     }
   };
 
+  React.useEffect(() => {
+    const performSearch = async () => {
+      if (query !== "") {
+        setLoading(true);
+
+        const fetchedData = await fetchMore({
+          variables: {
+            query,
+            first: ITEMS_PER_PAGE,
+            last: null, // NOTE: Reset cache
+            before: null, // NOTE: Reset cache
+          },
+        });
+
+        console.log(fetchedData);
+
+        setData(fetchedData.data);
+        setLoading(false);
+      }
+    };
+    void performSearch();
+  }, [createQueryString, fetchMore, pathname, query, router, refetch]);
+
+  const handleDebouncedSearch = React.useCallback(
+    (q: string) => {
+      console.log(q, query);
+      if (q !== query) {
+        setQuery(q);
+      }
+    },
+    [query],
+  );
+
   if (error) return <p>Error: {error.message}</p>;
-  if (!loading && data?.search.edges.length === 0) return <p>No data found</p>;
+  // if (!loading && data?.search.edges.length === 0) return <p>No data found</p>;
 
   return (
     <>
@@ -107,13 +146,8 @@ export default function Home() {
         <h1>Test Application</h1>
         <div>
           <div className="flex items-center justify-between">
-            <DebouncedSearchInput />
-            <div
-              className={clsx({
-                "animate-bounce": loading,
-                "flex h-4 ": true,
-              })}
-            >
+            <DebouncedSearchInput onSearch={handleDebouncedSearch} />
+            <div className="flex h-4">
               {loading ? (
                 <div className="flex items-center">
                   <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />

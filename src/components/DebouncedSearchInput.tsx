@@ -1,5 +1,6 @@
 import React from "react";
-import debounce from "lodash.debounce";
+
+import { Input } from "@/components/ui/input";
 
 function useDebouncedSearchTerm(value: string, delay: number): string {
   const [debouncedValue, setDebouncedValue] = React.useState(value);
@@ -17,29 +18,28 @@ function useDebouncedSearchTerm(value: string, delay: number): string {
   return debouncedValue;
 }
 
-export const DebouncedSearchInput = () => {
-  const [searchTerm, setSearchTerm] = React.useState<string>("");
-  const debouncedSearchTerm = useDebouncedSearchTerm(searchTerm, 1000);
+export const DebouncedSearchInput = React.memo(
+  ({ onSearch }: { onSearch: (searchTerm: string) => void }) => {
+    const [searchTerm, setSearchTerm] = React.useState<string>("");
+    const debouncedSearchTerm = useDebouncedSearchTerm(searchTerm, 1000);
 
-  React.useEffect(() => {
-    performSearch(debouncedSearchTerm);
-  }, [debouncedSearchTerm]);
+    React.useEffect(() => {
+      onSearch(debouncedSearchTerm);
+    }, [debouncedSearchTerm, onSearch]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-  };
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchTerm(e.target.value);
+    };
 
-  const performSearch = (searchValue: string) => {
-    console.log(`Search for ${searchValue}`);
-    // Implement your search logic here
-  };
-
-  return (
-    <input
-      type="text"
-      value={searchTerm}
-      onChange={handleChange}
-      placeholder="Search..."
-    />
-  );
-};
+    return (
+      <form onSubmit={(e) => e.preventDefault()}>
+        <Input
+          type="text"
+          value={searchTerm}
+          onChange={handleChange}
+          placeholder="e.g. @tanstack/table" // NOTE: should be @tanstack/react-table
+        />
+      </form>
+    );
+  },
+);
