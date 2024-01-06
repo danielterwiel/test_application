@@ -107,7 +107,7 @@ export default function Home() {
         <h1>Test Application</h1>
         <RepositoryTable data={data?.search.edges} />
 
-        <div className="flex gap-4">
+        <div className="flex justify-center gap-4">
           <button
             disabled={!data.search.pageInfo.hasPreviousPage || loading}
             aria-disabled={!data.search.pageInfo.hasPreviousPage || loading}
