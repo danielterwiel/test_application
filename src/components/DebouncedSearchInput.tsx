@@ -54,8 +54,8 @@ export const DebouncedSearchInput = React.memo(function DebouncedSearchInput({
           value={searchTerm}
           onChange={handleChange}
           role="search"
-          placeholder="e.g. @tanstack/react-table"
-          className="pl-8"
+          placeholder="e.g. @tanstack/table"
+          className="pl-8 focus:ring-2 focus:ring-offset-2 focus:ring-offset-border"
         />
         <div className="absolute pl-2 pt-2.5">
           {loading ? (

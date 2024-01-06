@@ -124,8 +124,7 @@ export default function Home() {
     [fetchMore, setQueryStringParameter],
   );
 
-  if (error) return <p>Error: {error.message}</p>;
-  // if (!loading && data?.search.edges.length === 0) return <p>No data found</p>;
+  if (error) return;
 
   return (
     <>
@@ -146,7 +145,7 @@ export default function Home() {
           ) : null}
         </div>
         <div>
-          <div className="flex flex-col items-end justify-between gap-8 md:flex-row">
+          <div className="flex flex-col items-end justify-between gap-8 sm:flex-row">
             <DebouncedSearchInput
               onSearch={handleDebouncedSearch}
               loading={loading}
@@ -157,23 +156,32 @@ export default function Home() {
               <Button
                 disabled={!data?.search.pageInfo.hasPreviousPage || loading}
                 onClick={handlePrevious}
+                className="focus:ring-2 focus:ring-offset-2 focus:ring-offset-border"
               >
                 Back
               </Button>
               <Button
                 disabled={!data?.search.pageInfo.hasNextPage || loading}
                 onClick={handleNext}
+                className="focus:ring-2 focus:ring-offset-2 focus:ring-offset-border"
               >
                 Next
               </Button>
             </div>
           </div>
         </div>
-        <RepositoryTable
-          data={data?.search.edges}
-          loading={loading}
-          aria-busy={loading}
-        />
+        {error ? (
+          <p className="text-xl text-destructive">Error: {error}</p>
+        ) : null}
+        {!loading && data?.search.edges.length === 0 ? (
+          <p className="text-xl text-destructive">No results found </p>
+        ) : (
+          <RepositoryTable
+            data={data?.search.edges}
+            loading={loading}
+            aria-busy={loading}
+          />
+        )}
       </main>
     </>
   );
