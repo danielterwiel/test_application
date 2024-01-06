@@ -12,7 +12,7 @@ import { type SearchResults } from "../types";
 
 const ITEMS_PER_PAGE = 10;
 
-export default function Home() {
+export default function App() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -36,6 +36,7 @@ export default function Home() {
 
   React.useEffect(() => {
     if (data === null && initialData) {
+      console.log("initialData", JSON.stringify(initialData, null, 2));
       setData(initialData);
       setLoading(false);
     }
@@ -174,7 +175,7 @@ export default function Home() {
           <p className="text-xl text-destructive">Error: {error}</p>
         ) : null}
         {!loading && data?.search.edges.length === 0 ? (
-          <p className="text-xl text-destructive">No results found </p>
+          <p className="text-xl text-destructive">No results found</p>
         ) : (
           <RepositoryTable
             data={data?.search.edges}

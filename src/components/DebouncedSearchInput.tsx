@@ -1,7 +1,7 @@
 import React from "react";
 
 import { Input } from "@/components/ui/input";
-import { Label } from "~/@/components/ui/label";
+import { Label } from "@/components/ui/label";
 import { MagnifyingGlassIcon, ReloadIcon } from "@radix-ui/react-icons";
 
 function useDebouncedSearchTerm(value: string, delay: number): string {
