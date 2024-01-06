@@ -114,8 +114,6 @@ export default function Home() {
           },
         });
 
-        console.log(fetchedData);
-
         setData(fetchedData.data);
         setLoading(false);
       }
@@ -172,7 +170,11 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <RepositoryTable data={data?.search.edges} loading={loading} />
+        <RepositoryTable
+          data={data?.search.edges}
+          loading={loading}
+          aria-busy={loading}
+        />
       </main>
     </>
   );
