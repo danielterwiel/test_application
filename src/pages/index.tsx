@@ -5,10 +5,11 @@ import { useSearchParams, usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ReloadIcon } from "@radix-ui/react-icons";
 
+import { DebouncedSearchInput } from "../components/DebouncedSearchInput";
 import { GET_REACT_REPOSITORIES } from "../queries";
-import type { SearchResults } from "../types";
 import { RepositoryTable } from "../components/RepositoryTable";
 import clsx from "clsx";
+import type { SearchResults } from "../types";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -106,6 +107,7 @@ export default function Home() {
         <h1>Test Application</h1>
         <div>
           <div className="flex items-center justify-between">
+            <DebouncedSearchInput />
             <div
               className={clsx({
                 "animate-bounce": loading,
