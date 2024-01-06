@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { describe, it, expect } from "vitest";
-import { Table } from "../components/Table";
+import { RepositoryTable } from "../components/RepositoryTable";
 import { type RepositoryEdge } from "../types";
 
 const mockData: RepositoryEdge[] = [
@@ -21,7 +21,7 @@ const mockData: RepositoryEdge[] = [
 
 describe("Table component", () => {
   it("renders repository data correctly", () => {
-    render(<Table data={mockData} />);
+    render(<RepositoryTable data={mockData} />);
 
     const repoName = screen.getByText("React Repo 1");
     const repoStars = screen.getByText("100");

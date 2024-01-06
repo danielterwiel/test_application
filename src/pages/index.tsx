@@ -2,7 +2,7 @@ import Head from "next/head";
 import { useQuery } from "@apollo/client";
 import { GET_REACT_REPOSITORIES } from "../queries";
 import type { SearchResults } from "../types";
-import { Table } from "../components/Table";
+import { RepositoryTable } from "../components/RepositoryTable";
 
 export default function Home() {
   const { loading, error, data } = useQuery<SearchResults>(
@@ -19,9 +19,11 @@ export default function Home() {
         <title>Test Application</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="prose p-8 font-mono">
-        <h1>Test Application</h1>
-        <Table data={data.search.edges} />
+      <main className="p-8">
+        <h1 className="scroll-m-20 pb-10 text-4xl font-extrabold tracking-tight lg:text-5xl">
+          Test Application
+        </h1>
+        <RepositoryTable data={data.search.edges} />
       </main>
     </>
   );

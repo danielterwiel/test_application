@@ -1,49 +1,59 @@
 import React from "react";
 import { type RepositoryEdge } from "../types";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableCaption,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
-export const Table = ({ data }: { data: RepositoryEdge[] }) => {
+export const RepositoryTable = ({ data }: { data: RepositoryEdge[] }) => {
   return (
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>
+    <Table className="font-mono">
+      <TableCaption>A list of popular React repositories.</TableCaption>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Name</TableHead>
+          <TableHead>
             <span className="flex justify-end gap-1">
               <span aria-hidden="true">🌟</span>
               Stars
             </span>
-          </th>
-          <th>
+          </TableHead>
+          <TableHead>
             <span className="flex justify-end gap-1">
               <span aria-hidden="true">🍴</span>
               Forks
             </span>
-          </th>
-        </tr>
-      </thead>
-      <tbody>
+          </TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
         {data.map((edge: RepositoryEdge) => (
-          <tr key={edge.node.name}>
-            <td>
+          <TableRow key={edge.node.name}>
+            <TableCell>
               <a href={edge.node.url} target="_blank" rel="noopener noreferrer">
                 {edge.node.name}
               </a>
-            </td>
-            <td>
+            </TableCell>
+            <TableCell>
               <span className="flex justify-end gap-1">
                 <span aria-hidden="true">🌟</span>
                 {edge.node.stargazers.totalCount}
               </span>
-            </td>
-            <td>
+            </TableCell>
+            <TableCell>
               <span className="flex justify-end gap-1">
                 <span aria-hidden="true">🍴</span>
                 {edge.node.forks.totalCount}
               </span>
-            </td>
-          </tr>
+            </TableCell>
+          </TableRow>
         ))}
-      </tbody>
-    </table>
+      </TableBody>
+    </Table>
   );
 };

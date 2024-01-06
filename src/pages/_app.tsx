@@ -3,7 +3,7 @@ import React from "react";
 import { ApolloProvider } from "@apollo/client";
 import { client } from "../apolloClient";
 
-import "~/styles/globals.css";
+import "~/src/styles/globals.css";
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
