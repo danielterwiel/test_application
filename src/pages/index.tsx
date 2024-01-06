@@ -60,11 +60,11 @@ export default function Home() {
       setLoading(true);
       const fetchedData = await fetchMore({
         variables: {
-          first: ITEMS_PER_PAGE,
-          after: data.search.pageInfo.endCursor,
-          last: null, // NOTE: Reset cache
-          before: null, // NOTE: Reset cache
           query: decodeURI(searchParams.get("query") ?? "topic:react"),
+          before: null, // NOTE: Reset cache
+          after: data.search.pageInfo.endCursor,
+          first: ITEMS_PER_PAGE,
+          last: null, // NOTE: Reset cache
         },
       });
 
@@ -83,11 +83,11 @@ export default function Home() {
       setLoading(true);
       const fetchedData = await fetchMore({
         variables: {
-          last: ITEMS_PER_PAGE,
-          before: data.search.pageInfo.startCursor,
-          first: null, // NOTE: Reset cache
-          after: null, // NOTE: Reset cache
           query: decodeURI(searchParams.get("query") ?? "topic:react"),
+          before: data.search.pageInfo.startCursor,
+          after: null, // NOTE: Reset cache
+          first: null, // NOTE: Reset cache
+          last: ITEMS_PER_PAGE,
         },
       });
       setQueryStringParameter(
@@ -105,14 +105,13 @@ export default function Home() {
       const performSearch = async () => {
         setLoading(true);
 
-        const q = `topic:react ${searchInput}`;
-
+        const q = `topic:react ${searchInput}`.trim();
         const fetchedData = await fetchMore({
           variables: {
             query: q,
-            first: ITEMS_PER_PAGE,
-            last: null, // NOTE: Reset cache
             before: null, // NOTE: Reset cache
+            last: null, // NOTE: Reset cache
+            first: ITEMS_PER_PAGE,
           },
         });
 
@@ -134,21 +133,27 @@ export default function Home() {
         <title>Test Application</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="prose p-8 font-mono">
+      <main className="prose relative grid max-w-prose p-6 font-mono">
         <h1>Test Application</h1>
-        <div>
-          <div className="flex items-center justify-between">
-            <DebouncedSearchInput onSearch={handleDebouncedSearch} />
-            <div className="flex h-4">
-              {loading ? (
-                <div className="flex items-center">
-                  <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-                  <span>Loading...</span>
-                </div>
-              ) : null}
+        <div className="flex h-4" role="status">
+          {loading ? (
+            <div className="invsible absolute right-0 top-0 p-8 md:visible">
+              <div className="flex items-center">
+                <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                <span>Loading...</span>
+              </div>
             </div>
+          ) : null}
+        </div>
+        <div>
+          <div className="flex flex-col items-end justify-between gap-8 md:flex-row">
+            <DebouncedSearchInput
+              onSearch={handleDebouncedSearch}
+              loading={loading}
+              setLoading={setLoading}
+            />
 
-            <div className="flex justify-end gap-4">
+            <div className="flex justify-between gap-4 md:justify-end ">
               <Button
                 disabled={!data?.search.pageInfo.hasPreviousPage || loading}
                 onClick={handlePrevious}
