@@ -192,6 +192,17 @@ describe("App component", () => {
     expect(await screen.findByText("Next")).toBeInTheDocument();
   });
 
+  it('renders "Back" button as disabled when there are no previous pages', async () => {
+    render(
+      <MockedProvider mocks={mockResults} addTypename={false}>
+        <App />
+      </MockedProvider>,
+    );
+
+    expect(await screen.findByText("Back")).toBeDisabled();
+    expect(await screen.findByText("Next")).toBeDisabled();
+  });
+
   it("renders title", async () => {
     render(
       <MockedProvider mocks={mockResults} addTypename={false}>
