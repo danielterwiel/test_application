@@ -20,7 +20,7 @@ function useDebouncedSearchTerm(value: string, delay: number): string {
   return debouncedValue;
 }
 
-export const DebouncedSearchInput = React.memo(function DebouncedSearchInput({
+export const SearchInput = React.memo(function SearchInput({
   onSearch,
   loading,
   setLoading,

@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ReloadIcon } from "@radix-ui/react-icons";
 
-import { DebouncedSearchInput } from "../components/DebouncedSearchInput";
+import { SearchInput } from "../components/SearchInput";
 import { GET_REACT_REPOSITORIES } from "../queries";
 import { RepositoryTable } from "../components/RepositoryTable";
 import { type SearchResults } from "../types";
@@ -27,9 +27,11 @@ export default function App() {
     fetchMore,
   } = useQuery<SearchResults>(GET_REACT_REPOSITORIES, {
     variables: {
-      first: ITEMS_PER_PAGE,
-      before: searchParams.get("page"),
       query: "topic:react",
+      first: ITEMS_PER_PAGE,
+      last: null,
+      before: searchParams.get("page"),
+      after: null,
     },
     notifyOnNetworkStatusChange: true,
   });
@@ -84,10 +86,10 @@ export default function App() {
       const fetchedData = await fetchMore({
         variables: {
           query: decodeURI(searchParams.get("query") ?? "topic:react"),
-          before: data.search.pageInfo.startCursor,
-          after: null, // NOTE: Reset cache
           first: null, // NOTE: Reset cache
           last: ITEMS_PER_PAGE,
+          before: data.search.pageInfo.startCursor,
+          after: null, // NOTE: Reset cache
         },
       });
       setQueryStringParameter(
@@ -109,9 +111,10 @@ export default function App() {
         const fetchedData = await fetchMore({
           variables: {
             query: q,
-            before: null, // NOTE: Reset cache
-            last: null, // NOTE: Reset cache
             first: ITEMS_PER_PAGE,
+            last: null, // NOTE: Reset cache
+            before: null, // NOTE: Reset cache
+            after: null,
           },
         });
 
@@ -124,8 +127,6 @@ export default function App() {
     [fetchMore, setQueryStringParameter],
   );
 
-  if (error) return;
-
   return (
     <>
       <Head>
@@ -134,6 +135,7 @@ export default function App() {
       </Head>
       <main className="prose relative grid max-w-prose p-6 font-mono">
         <h1>Test Application</h1>
+
         <div className="flex h-4" role="status">
           {loading ? (
             <div className="absolute right-0 top-0 p-8">
@@ -146,7 +148,7 @@ export default function App() {
         </div>
         <div>
           <div className="flex flex-col items-end justify-between gap-8 sm:flex-row">
-            <DebouncedSearchInput
+            <SearchInput
               onSearch={handleDebouncedSearch}
               loading={loading}
               setLoading={setLoading}
@@ -171,9 +173,9 @@ export default function App() {
           </div>
         </div>
         {error ? (
-          <p className="text-xl text-destructive">Error: {error}</p>
+          <p className="text-xl text-destructive">Error: {error.message}</p>
         ) : null}
-        {!loading && data?.search.edges.length === 0 ? (
+        {error ?? (!loading && data?.search.edges.length === 0) ? (
           <p className="text-xl">No results found</p>
         ) : (
           <RepositoryTable
