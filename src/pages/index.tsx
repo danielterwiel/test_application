@@ -9,21 +9,19 @@ import { SearchInput } from "../components/SearchInput";
 import { GET_REACT_REPOSITORIES } from "../queries";
 import { RepositoryTable } from "../components/RepositoryTable";
 import { type SearchResults } from "../types";
-import { set } from "zod";
 
 const ITEMS_PER_PAGE = 10;
 
 export default function App() {
   const searchParams = useSearchParams();
   const router = useRouter();
-
   // HACK: This is a workaround because the `loading` bool returned from useQuery is not updated, even when fetchMore resolves.
   // Similar issue: https://stackoverflow.com/questions/72083468/loading-remains-true-when-loading-data-with-usequery-using-apolloclient-in#comment133130739_72208553
   const [loading, setLoading] = React.useState(true);
   const initialQuery = decodeURI(searchParams.get("query") ?? "");
   const initialRender = React.useRef(true);
-
   const [data, setData] = React.useState<SearchResults | null>(null);
+
   const {
     error,
     data: initialData,
@@ -171,7 +169,7 @@ export default function App() {
           ) : null}
         </div>
         <div>
-          <div className="flex flex-col items-end justify-between gap-8 sm:flex-row">
+          <div className="h-30 flex flex-col items-end justify-between gap-8 sm:h-10 sm:flex-row">
             {initialRender.current ? null : (
               <SearchInput
                 onSearch={handleDebouncedSearch}
@@ -179,7 +177,7 @@ export default function App() {
               />
             )}
 
-            <div className="flex justify-between gap-4 md:justify-end ">
+            <div className="flex w-full justify-end gap-4">
               <Button
                 disabled={!data?.search.pageInfo.hasPreviousPage || loading}
                 onClick={handlePrevious}
