@@ -1,10 +1,12 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen } from "@testing-library/react";
 import { MockedProvider } from "@apollo/client/testing";
 import { describe, it, expect, vi } from "vitest";
+import type { ChangeEvent } from "react";
+import { ObservableQuery, type QueryResult } from "@apollo/client";
+import * as apolloClient from "@apollo/client";
 
 import App from "../pages/index";
 import { GET_REACT_REPOSITORIES } from "../queries";
-import { type RepositoryEdge } from "../types";
 
 const mockNoResults = [
   {
@@ -107,11 +109,19 @@ describe("App component", () => {
       usePathname: vi.fn(),
     };
   });
+
   vi.mock("../components/SearchInput.tsx", async () => {
     const actual = await vi.importActual("../components/SearchInput.tsx");
     return {
       ...actual,
-      SearchInput: vi.fn(),
+      SearchInput: ({ onSearch }: { onSearch: (input: string) => string }) => (
+        <input
+          data-testid="search-input"
+          onChange={(event: ChangeEvent<HTMLInputElement>) =>
+            onSearch(event.target.value)
+          }
+        />
+      ),
     };
   });
 
@@ -124,6 +134,10 @@ describe("App component", () => {
       ...actual,
       RepositoryTable: mock,
     };
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it("renders loading state initially", () => {
@@ -166,5 +180,77 @@ describe("App component", () => {
     );
 
     expect(await screen.findByText("RepositoryTable")).toBeInTheDocument();
+  });
+
+  it("renders pagination buttons", async () => {
+    render(
+      <MockedProvider mocks={mockResults} addTypename={false}>
+        <App />
+      </MockedProvider>,
+    );
+
+    expect(await screen.findByText("Back")).toBeInTheDocument();
+    expect(await screen.findByText("Next")).toBeInTheDocument();
+  });
+
+  it("renders title", async () => {
+    render(
+      <MockedProvider mocks={mockResults} addTypename={false}>
+        <App />
+      </MockedProvider>,
+    );
+
+    expect(await screen.findByText("Test Application")).toBeInTheDocument();
+  });
+
+  it("renders search input", async () => {
+    render(
+      <MockedProvider mocks={mockResults} addTypename={false}>
+        <App />
+      </MockedProvider>,
+    );
+
+    const mockSearchInput = screen.getByTestId("search-input");
+    expect(mockSearchInput).toBeInTheDocument();
+  });
+
+  it("queries debounced search input", async () => {
+    const fetchMoreMock = vi.fn(() => ({
+      data: mockResults[0]?.result.data,
+    }));
+    vi.useFakeTimers();
+
+    vi.spyOn(apolloClient, "useQuery").mockImplementation(() => ({
+      fetchMore: fetchMoreMock,
+      data: mockResults[0]?.result.data,
+      loading: false,
+      networkStatus: 0,
+    }));
+
+    act(() => {
+      render(<App />);
+    });
+
+    expect(fetchMoreMock).not.toHaveBeenCalled();
+
+    act(() => {
+      vi.runAllTimers();
+    });
+
+    await act(async () => {
+      fireEvent.change(screen.getByTestId("search-input"), {
+        target: { value: "test" },
+      });
+    });
+
+    expect(fetchMoreMock).toHaveBeenCalledWith({
+      variables: {
+        after: null,
+        before: null,
+        first: 10,
+        last: null,
+        query: "topic:react test",
+      },
+    });
   });
 });
