@@ -63,10 +63,10 @@ export default function App() {
       const fetchedData = await fetchMore({
         variables: {
           query: decodeURI(searchParams.get("query") ?? "topic:react"),
-          before: null, // NOTE: Reset cache
-          after: data.search.pageInfo.endCursor,
           first: ITEMS_PER_PAGE,
           last: null, // NOTE: Reset cache
+          before: null, // NOTE: Reset cache
+          after: data.search.pageInfo.endCursor,
         },
       });
 
@@ -114,7 +114,7 @@ export default function App() {
             first: ITEMS_PER_PAGE,
             last: null, // NOTE: Reset cache
             before: null, // NOTE: Reset cache
-            after: null,
+            after: null, // NOTE: Reset cache
           },
         });
 
