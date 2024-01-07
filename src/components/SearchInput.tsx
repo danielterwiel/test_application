@@ -27,11 +27,20 @@ export const SearchInput = React.memo(function SearchInput({
   onSearch: (searchTerm: string) => void;
 }) {
   const searchParams = useSearchParams();
-  const [searchTerm, setSearchTerm] = React.useState<string>(
-    decodeURI(searchParams.get("query") ?? ""),
-  );
+  const [searchTerm, setSearchTerm] = React.useState<string>("");
   const debouncedSearchTerm = useDebouncedSearchTerm(searchTerm, 300);
   const isInitialRender = React.useRef(true);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+  const initialQuery = decodeURI(searchParams.get("query") ?? "").trim();
+
+  React.useEffect(() => {
+    if (!inputRef.current) {
+      return;
+    }
+    if (document.activeElement !== inputRef.current) {
+      setSearchTerm(initialQuery);
+    }
+  }, [initialQuery]);
 
   React.useEffect(() => {
     if (isInitialRender.current) {
@@ -59,6 +68,7 @@ export const SearchInput = React.memo(function SearchInput({
           value={searchTerm}
           onChange={handleChange}
           role="search"
+          ref={inputRef}
           placeholder="e.g. @tanstack/table"
           className="pl-8 focus:ring-2 focus:ring-offset-2 focus:ring-offset-border"
         />
