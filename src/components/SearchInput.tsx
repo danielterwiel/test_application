@@ -2,7 +2,7 @@ import React from "react";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MagnifyingGlassIcon, ReloadIcon } from "@radix-ui/react-icons";
+import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
 
 function useDebouncedSearchTerm(value: string, delay: number): string {
   const [debouncedValue, setDebouncedValue] = React.useState(value);
@@ -22,22 +22,24 @@ function useDebouncedSearchTerm(value: string, delay: number): string {
 
 export const SearchInput = React.memo(function SearchInput({
   onSearch,
-  loading,
-  setLoading,
+  initialValue = "",
 }: {
   onSearch: (searchTerm: string) => void;
-  loading: boolean;
-  setLoading: (loading: boolean) => void;
+  initialValue: string;
 }) {
-  const [searchTerm, setSearchTerm] = React.useState<string>("");
+  const initialRender = React.useRef(true);
+  const [searchTerm, setSearchTerm] = React.useState<string>(initialValue);
   const debouncedSearchTerm = useDebouncedSearchTerm(searchTerm, 250);
 
   React.useEffect(() => {
+    if (initialRender.current) {
+      initialRender.current = false;
+      return;
+    }
     onSearch(debouncedSearchTerm);
   }, [debouncedSearchTerm, onSearch]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLoading(true);
     setSearchTerm(e.target.value);
   };
 
@@ -58,11 +60,7 @@ export const SearchInput = React.memo(function SearchInput({
           className="pl-8 focus:ring-2 focus:ring-offset-2 focus:ring-offset-border"
         />
         <div className="absolute pl-2 pt-2.5">
-          {loading ? (
-            <ReloadIcon className="absolute h-4 w-4 animate-spin" />
-          ) : (
-            <MagnifyingGlassIcon className="absolute h-4 w-4" />
-          )}
+          <MagnifyingGlassIcon className="absolute h-4 w-4" />
         </div>
       </div>
     </div>
