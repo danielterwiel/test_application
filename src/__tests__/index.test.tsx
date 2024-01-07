@@ -1,4 +1,10 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 import { MockedProvider } from "@apollo/client/testing";
 import { describe, it, expect, vi } from "vitest";
 import type { ChangeEvent } from "react";
@@ -220,8 +226,10 @@ describe("App component", () => {
       </MockedProvider>,
     );
 
-    const mockSearchInput = screen.getByTestId("search-input");
-    expect(mockSearchInput).toBeInTheDocument();
+    await waitFor(() => {
+      const mockSearchInput = screen.getByTestId("search-input");
+      expect(mockSearchInput).toBeInTheDocument();
+    });
   });
 
   it("queries debounced search input", async () => {
