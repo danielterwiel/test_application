@@ -133,7 +133,7 @@ export default function App() {
         <title>Test Application</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="prose relative grid max-w-prose p-6 font-mono">
+      <main className="prose relative grid max-w-prose p-6 font-sans">
         <h1>Test Application</h1>
 
         <div className="flex h-4" role="status">
