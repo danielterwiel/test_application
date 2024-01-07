@@ -2,7 +2,6 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import { MockedProvider } from "@apollo/client/testing";
 import { describe, it, expect, vi } from "vitest";
 import type { ChangeEvent } from "react";
-import { ObservableQuery, type QueryResult } from "@apollo/client";
 import * as apolloClient from "@apollo/client";
 
 import App from "../pages/index";
@@ -215,16 +214,19 @@ describe("App component", () => {
   });
 
   it("queries debounced search input", async () => {
-    const fetchMoreMock = vi.fn(() => ({
-      data: mockResults[0]?.result.data,
-    }));
+    const fetchMoreMock = vi.fn(() =>
+      Promise.resolve({
+        data: mockResults[0]?.result.data,
+      }),
+    );
+
     vi.useFakeTimers();
 
     vi.spyOn(apolloClient, "useQuery").mockImplementation(() => ({
+      // @ts-expect-error - mock
       fetchMore: fetchMoreMock,
       data: mockResults[0]?.result.data,
       loading: false,
-      networkStatus: 0,
     }));
 
     act(() => {
