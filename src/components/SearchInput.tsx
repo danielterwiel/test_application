@@ -2,7 +2,8 @@ import React from "react";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { MagnifyingGlassIcon, ReloadIcon } from "@radix-ui/react-icons";
+import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
+import { useSearchParams } from "next/navigation";
 
 function useDebouncedSearchTerm(value: string, delay: number): string {
   const [debouncedValue, setDebouncedValue] = React.useState(value);
@@ -22,22 +23,26 @@ function useDebouncedSearchTerm(value: string, delay: number): string {
 
 export const SearchInput = React.memo(function SearchInput({
   onSearch,
-  loading,
-  setLoading,
 }: {
   onSearch: (searchTerm: string) => void;
-  loading: boolean;
-  setLoading: (loading: boolean) => void;
 }) {
-  const [searchTerm, setSearchTerm] = React.useState<string>("");
-  const debouncedSearchTerm = useDebouncedSearchTerm(searchTerm, 250);
+  const searchParams = useSearchParams();
+  const [searchTerm, setSearchTerm] = React.useState<string>(
+    decodeURI(searchParams.get("query") ?? ""),
+  );
+  const debouncedSearchTerm = useDebouncedSearchTerm(searchTerm, 300);
+  const isInitialRender = React.useRef(true);
 
   React.useEffect(() => {
+    if (isInitialRender.current) {
+      isInitialRender.current = false;
+      return;
+    }
+
     onSearch(debouncedSearchTerm);
   }, [debouncedSearchTerm, onSearch]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setLoading(true);
     setSearchTerm(e.target.value);
   };
 
@@ -58,11 +63,7 @@ export const SearchInput = React.memo(function SearchInput({
           className="pl-8 focus:ring-2 focus:ring-offset-2 focus:ring-offset-border"
         />
         <div className="absolute pl-2 pt-2.5">
-          {loading ? (
-            <ReloadIcon className="absolute h-4 w-4 animate-spin" />
-          ) : (
-            <MagnifyingGlassIcon className="absolute h-4 w-4" />
-          )}
+          <MagnifyingGlassIcon className="absolute h-4 w-4 text-gray-500/70" />
         </div>
       </div>
     </div>

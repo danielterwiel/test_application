@@ -19,15 +19,16 @@ export default function App() {
   // HACK: This is a workaround because the `loading` bool returned from useQuery is not updated, even when fetchMore resolves.
   // Similar issue: https://stackoverflow.com/questions/72083468/loading-remains-true-when-loading-data-with-usequery-using-apolloclient-in#comment133130739_72208553
   const [loading, setLoading] = React.useState(true);
-
+  const isInitialRender = React.useRef(true);
   const [data, setData] = React.useState<SearchResults | null>(null);
+
   const {
     error,
     data: initialData,
     fetchMore,
   } = useQuery<SearchResults>(GET_REACT_REPOSITORIES, {
     variables: {
-      query: "topic:react",
+      query: `topic:react ${decodeURI(searchParams.get("query") ?? "")}`.trim(),
       first: ITEMS_PER_PAGE,
       last: null,
       before: searchParams.get("page"),
@@ -46,8 +47,18 @@ export default function App() {
   const setQueryStringParameter = React.useCallback(
     (key: string, value: string, replace = false) => {
       const searchParams = new URLSearchParams(window.location.search);
-      searchParams.set(key, encodeURI(value));
-      const uri = `${window.location.pathname}?${searchParams.toString()}`;
+
+      if (!value) {
+        searchParams.delete(key);
+      } else {
+        searchParams.set(key, encodeURI(value));
+      }
+
+      const queryString = searchParams.toString();
+      const uri = queryString
+        ? `${window.location.pathname}?${queryString}`
+        : window.location.pathname;
+
       if (replace) {
         router.push(uri);
       } else {
@@ -62,7 +73,9 @@ export default function App() {
       setLoading(true);
       const fetchedData = await fetchMore({
         variables: {
-          query: decodeURI(searchParams.get("query") ?? "topic:react"),
+          query: `topic:react ${decodeURI(
+            searchParams.get("query") ?? "",
+          )}`.trim(),
           first: ITEMS_PER_PAGE,
           last: null, // NOTE: Reset cache
           before: null, // NOTE: Reset cache
@@ -85,7 +98,9 @@ export default function App() {
       setLoading(true);
       const fetchedData = await fetchMore({
         variables: {
-          query: decodeURI(searchParams.get("query") ?? "topic:react"),
+          query: `topic:react ${decodeURI(
+            searchParams.get("query") ?? "",
+          )}`.trim(),
           first: null, // NOTE: Reset cache
           last: ITEMS_PER_PAGE,
           before: data.search.pageInfo.startCursor,
@@ -104,8 +119,14 @@ export default function App() {
 
   const handleDebouncedSearch = React.useCallback(
     (searchInput: string) => {
+      if (isInitialRender.current) {
+        isInitialRender.current = false;
+        return;
+      }
+
       const performSearch = async () => {
         setLoading(true);
+        setQueryStringParameter("page", "", true);
 
         const q = `topic:react ${searchInput}`.trim();
         const fetchedData = await fetchMore({
@@ -118,7 +139,7 @@ export default function App() {
           },
         });
 
-        setQueryStringParameter("query", q, true);
+        setQueryStringParameter("query", searchInput, true);
         setData(fetchedData.data);
         setLoading(false);
       };
@@ -148,11 +169,7 @@ export default function App() {
         </div>
         <div>
           <div className="flex flex-col items-end justify-between gap-8 sm:flex-row">
-            <SearchInput
-              onSearch={handleDebouncedSearch}
-              loading={loading}
-              setLoading={setLoading}
-            />
+            <SearchInput onSearch={handleDebouncedSearch} />
 
             <div className="flex justify-between gap-4 md:justify-end ">
               <Button

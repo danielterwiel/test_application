@@ -105,7 +105,6 @@ describe("App component", () => {
       useSearchParams: vi.fn(() => ({
         get: vi.fn(),
       })),
-      usePathname: vi.fn(),
     };
   });
 
@@ -224,7 +223,7 @@ describe("App component", () => {
     expect(mockSearchInput).toBeInTheDocument();
   });
 
-  it("queries debounced search input", async () => {
+  it("fetchMore called after search input change", async () => {
     const fetchMoreMock = vi.fn(() =>
       Promise.resolve({
         data: mockResults[0]?.result.data,
@@ -241,18 +240,23 @@ describe("App component", () => {
     }));
 
     act(() => {
+      vi.runAllTimers();
       render(<App />);
     });
 
     expect(fetchMoreMock).not.toHaveBeenCalled();
 
-    act(() => {
-      vi.runAllTimers();
-    });
-
     await act(async () => {
       fireEvent.change(screen.getByTestId("search-input"), {
-        target: { value: "test" },
+        target: { value: "first render" },
+      });
+    });
+
+    // HACK: because we prevent the first render to trigger the fetchMore
+    // in the handleDebouncedSearch useCallback function, we need to re-render
+    await act(async () => {
+      fireEvent.change(screen.getByTestId("search-input"), {
+        target: { value: "second render" },
       });
     });
 
@@ -262,7 +266,7 @@ describe("App component", () => {
         before: null,
         first: 10,
         last: null,
-        query: "topic:react test",
+        query: "topic:react second render",
       },
     });
   });

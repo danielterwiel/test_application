@@ -3,39 +3,27 @@ import { describe, it, expect, vi } from "vitest";
 import { SearchInput } from "../components/SearchInput";
 
 describe("SearchInput", () => {
-  it("renders correctly", () => {
-    render(
-      <SearchInput onSearch={vi.fn()} loading={false} setLoading={vi.fn()} />,
-    );
-    expect(screen.getByRole("search")).toBeInTheDocument();
-    expect(screen.getByText("Search")).toBeInTheDocument();
+  vi.mock("next/navigation", async () => {
+    const actual = await vi.importActual("next/navigation");
+    return {
+      ...actual,
+      useSearchParams: vi.fn(() => ({
+        get: vi.fn(),
+      })),
+    };
   });
 
-  it("updates loading indicator on user input", async () => {
-    const setLoadingMock = vi.fn();
-    render(
-      <SearchInput
-        onSearch={vi.fn()}
-        loading={false}
-        setLoading={setLoadingMock}
-      />,
-    );
-
-    fireEvent.change(screen.getByRole("search"), { target: { value: "test" } });
-    expect(setLoadingMock).toHaveBeenCalledWith(true);
+  it("renders correctly", () => {
+    render(<SearchInput onSearch={vi.fn()} />);
+    expect(screen.getByRole("search")).toBeInTheDocument();
+    expect(screen.getByText("Search")).toBeInTheDocument();
   });
 
   it("debounces search term", async () => {
     const onSearchMock = vi.fn();
     vi.useFakeTimers();
 
-    render(
-      <SearchInput
-        onSearch={onSearchMock}
-        loading={false}
-        setLoading={vi.fn()}
-      />,
-    );
+    render(<SearchInput onSearch={onSearchMock} />);
     fireEvent.change(screen.getByRole("search"), { target: { value: "test" } });
 
     act(() => {
