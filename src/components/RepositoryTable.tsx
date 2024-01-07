@@ -22,6 +22,7 @@ export const RepositoryTable = ({
     "animate-pulse": loading,
     "font-mono": true,
   });
+
   return (
     <Table className={tableClass}>
       <TableCaption>A list of popular React repositories.</TableCaption>

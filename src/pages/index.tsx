@@ -5,19 +5,19 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ReloadIcon } from "@radix-ui/react-icons";
 
-import { DebouncedSearchInput } from "../components/DebouncedSearchInput";
+import { SearchInput } from "../components/SearchInput";
 import { GET_REACT_REPOSITORIES } from "../queries";
 import { RepositoryTable } from "../components/RepositoryTable";
 import { type SearchResults } from "../types";
 
 const ITEMS_PER_PAGE = 10;
 
-export default function Home() {
+export default function App() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // NOTE: This is a workaround because the `loading` bool returned from useQuery is not updated, even when fetchMore resolves.
-  // See: https://stackoverflow.com/questions/72083468/loading-remains-true-when-loading-data-with-usequery-using-apolloclient-in#comment133130739_72208553
+  // HACK: This is a workaround because the `loading` bool returned from useQuery is not updated, even when fetchMore resolves.
+  // Similar issue: https://stackoverflow.com/questions/72083468/loading-remains-true-when-loading-data-with-usequery-using-apolloclient-in#comment133130739_72208553
   const [loading, setLoading] = React.useState(true);
 
   const [data, setData] = React.useState<SearchResults | null>(null);
@@ -27,9 +27,11 @@ export default function Home() {
     fetchMore,
   } = useQuery<SearchResults>(GET_REACT_REPOSITORIES, {
     variables: {
-      first: ITEMS_PER_PAGE,
-      before: searchParams.get("page"),
       query: "topic:react",
+      first: ITEMS_PER_PAGE,
+      last: null,
+      before: searchParams.get("page"),
+      after: null,
     },
     notifyOnNetworkStatusChange: true,
   });
@@ -61,10 +63,10 @@ export default function Home() {
       const fetchedData = await fetchMore({
         variables: {
           query: decodeURI(searchParams.get("query") ?? "topic:react"),
-          before: null, // NOTE: Reset cache
-          after: data.search.pageInfo.endCursor,
           first: ITEMS_PER_PAGE,
           last: null, // NOTE: Reset cache
+          before: null, // NOTE: Reset cache
+          after: data.search.pageInfo.endCursor,
         },
       });
 
@@ -84,10 +86,10 @@ export default function Home() {
       const fetchedData = await fetchMore({
         variables: {
           query: decodeURI(searchParams.get("query") ?? "topic:react"),
-          before: data.search.pageInfo.startCursor,
-          after: null, // NOTE: Reset cache
           first: null, // NOTE: Reset cache
           last: ITEMS_PER_PAGE,
+          before: data.search.pageInfo.startCursor,
+          after: null, // NOTE: Reset cache
         },
       });
       setQueryStringParameter(
@@ -109,9 +111,10 @@ export default function Home() {
         const fetchedData = await fetchMore({
           variables: {
             query: q,
-            before: null, // NOTE: Reset cache
-            last: null, // NOTE: Reset cache
             first: ITEMS_PER_PAGE,
+            last: null, // NOTE: Reset cache
+            before: null, // NOTE: Reset cache
+            after: null, // NOTE: Reset cache
           },
         });
 
@@ -124,16 +127,15 @@ export default function Home() {
     [fetchMore, setQueryStringParameter],
   );
 
-  if (error) return;
-
   return (
     <>
       <Head>
         <title>Test Application</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className="prose relative grid max-w-prose p-6 font-mono">
+      <main className="prose relative grid max-w-prose p-6 font-sans">
         <h1>Test Application</h1>
+
         <div className="flex h-4" role="status">
           {loading ? (
             <div className="absolute right-0 top-0 p-8">
@@ -146,7 +148,7 @@ export default function Home() {
         </div>
         <div>
           <div className="flex flex-col items-end justify-between gap-8 sm:flex-row">
-            <DebouncedSearchInput
+            <SearchInput
               onSearch={handleDebouncedSearch}
               loading={loading}
               setLoading={setLoading}
@@ -171,10 +173,10 @@ export default function Home() {
           </div>
         </div>
         {error ? (
-          <p className="text-xl text-destructive">Error: {error}</p>
+          <p className="text-xl text-destructive">Error: {error.message}</p>
         ) : null}
-        {!loading && data?.search.edges.length === 0 ? (
-          <p className="text-xl text-destructive">No results found </p>
+        {error ?? (!loading && data?.search.edges.length === 0) ? (
+          <p className="text-xl">No results found</p>
         ) : (
           <RepositoryTable
             data={data?.search.edges}

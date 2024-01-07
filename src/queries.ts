@@ -11,9 +11,9 @@ export const GET_REACT_REPOSITORIES = gql`
       query: $query
       type: REPOSITORY
       first: $first
-      after: $after
       last: $last
       before: $before
+      after: $after
     ) {
       edges {
         node {

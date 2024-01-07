@@ -7,6 +7,7 @@ import { type RepositoryEdge } from "../types";
 const mockData: RepositoryEdge[] = [
   {
     node: {
+      id: 1,
       name: "React Repo 1",
       url: "http://example.com/repo1",
       stargazers: {
@@ -21,7 +22,7 @@ const mockData: RepositoryEdge[] = [
 
 describe("Table component", () => {
   it("renders repository data correctly", () => {
-    render(<RepositoryTable data={mockData} />);
+    render(<RepositoryTable loading={false} data={mockData} />);
 
     const repoName = screen.getByText("React Repo 1");
     const repoStars = screen.getByText("100");
