@@ -11,7 +11,7 @@ describe("SearchInput", () => {
     expect(screen.getByText("Search")).toBeInTheDocument();
   });
 
-  it("updates on user input", async () => {
+  it("updates loading indicator on user input", async () => {
     const setLoadingMock = vi.fn();
     render(
       <SearchInput
@@ -26,27 +26,6 @@ describe("SearchInput", () => {
   });
 
   it("debounces search term", async () => {
-    const onSearchMock = vi.fn();
-    vi.useFakeTimers();
-
-    render(
-      <SearchInput
-        onSearch={onSearchMock}
-        loading={false}
-        setLoading={vi.fn()}
-      />,
-    );
-    fireEvent.change(screen.getByRole("search"), { target: { value: "test" } });
-
-    act(() => {
-      vi.runAllTimers();
-    });
-
-    expect(onSearchMock).toHaveBeenCalledWith("test");
-    vi.useRealTimers();
-  });
-
-  it("calls onSearch with the debounced search term", async () => {
     const onSearchMock = vi.fn();
     vi.useFakeTimers();
 
